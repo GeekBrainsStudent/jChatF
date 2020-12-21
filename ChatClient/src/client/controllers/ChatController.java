@@ -1,7 +1,9 @@
 package client.controllers;
 
 import client.NetworkClient;
+import client.models.Log;
 import client.models.Network;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -9,6 +11,7 @@ import javafx.scene.input.MouseEvent;
 
 import java.io.IOException;
 import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -28,6 +31,9 @@ public class ChatController {
 
     private Network network;
     private String selectedRecipient;
+
+    // объявляем журнал
+    private Log log;
 
 
     public void setLabel(String usernameTitle) {
@@ -66,6 +72,12 @@ public class ChatController {
             return cell ;
         });
 
+        // Инициализация журнала
+        log = new Log();
+
+        // выводим 100 сообщений из журнала на экран
+        appendHistory(log.readHistory());
+
     }
 
     private void sendMessage() {
@@ -93,13 +105,28 @@ public class ChatController {
 
     }
 
+    // Немного изменил метод вывода сообщений учитывая запись в лог
     public void appendMessage(String message) {
-        String timestamp = DateFormat.getInstance().format(new Date());
-        chatHistory.appendText(timestamp);
-        chatHistory.appendText(System.lineSeparator());
-        chatHistory.appendText(message);
-        chatHistory.appendText(System.lineSeparator());
-        chatHistory.appendText(System.lineSeparator());
+        StringBuffer chatText = new StringBuffer();
+
+        chatText.append(DateFormat.getInstance().format(new Date()));
+        chatText.append(System.lineSeparator());
+        chatText.append(message);
+        chatText.append(System.lineSeparator());
+        chatText.append(System.lineSeparator());
+
+        chatHistory.appendText(chatText.toString());
+
+        // Записываем сообщение в лог
+        log.write(chatText.toString());
+    }
+
+    // добавил метод вывода сообщений из лога
+    private void appendHistory(ArrayList<String> history) {
+        history.forEach((line) -> {
+            chatHistory.appendText(line);
+            chatHistory.appendText(System.lineSeparator());
+        });
     }
 
     public void setUsernameTitle(String username) {
